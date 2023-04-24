@@ -19,4 +19,5 @@ public class ListSEController {
         return new ResponseEntity<>(new ResponseDTO(
                 200, listSEService.getKids(), null), HttpStatus.OK);
     }
+
 }

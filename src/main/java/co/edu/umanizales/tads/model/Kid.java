@@ -6,9 +6,12 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class Kid {
-    private String identification;
+    private int identification;
     private String name;
     private byte age;
     private char gender;
-    private Location location;
+    private String location;
+
+    public Kid(int identification, String name, int age, String gender, String location) {
+    }
 }

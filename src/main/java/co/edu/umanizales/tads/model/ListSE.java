@@ -1,11 +1,10 @@
 package co.edu.umanizales.tads.model;
 
-import co.edu.umanizales.tads.model.Kid;
-import co.edu.umanizales.tads.model.Node;
 import lombok.Data;
 import lombok.Getter;
 
 import java.util.List;
+import java.util.Objects;
 
 @Data
  @Getter
@@ -87,7 +86,7 @@ import java.util.List;
      public void deleteByIdentification(String identification) {
          Kid kidToRemove = null;
          for (Kid kid : kids) {
-             if (kid.getIdentification().equals(identification)) {
+             if (Objects.equals(kid.getIdentification(), identification)) {
                  kidToRemove = kid;
                  break;
              }
@@ -98,7 +97,7 @@ import java.util.List;
      }
      public Kid getKidByIdentification(String identification) {
          for (Kid kid : kids) {
-             if (kid.getIdentification().equals(identification)) {
+             if (identification != null && identification.equals(kid.getIdentification())) {
                  return kid;
              }
          }
@@ -183,7 +182,7 @@ import java.util.List;
          if(this.head !=null){
              Node temp= this.head;
              while (temp != null){
-                 if(temp.getData().getLocation().getCode().equals(code)){
+                 if(temp.getData().getLocation().getBytes().equals(code)){
                      count++;
                  }
                  temp = temp.getNext();
@@ -196,7 +195,7 @@ import java.util.List;
          if( this.head!=null){
              Node temp = this.head;
              while(temp != null){
-                 if(temp.getData().getLocation().getCode().substring(0,5).equals(code)){
+                 if(temp.getData().getLocation().getBytes().toString().equals(code)){
                      count++;
                  }
                  temp = temp.getNext();
