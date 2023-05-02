@@ -8,3 +8,4 @@ public class ErrorDTO {
     private String message;
 
 }
+

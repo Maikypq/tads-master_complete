@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class KidByLocationDTO {
-    private String code;
-    private String name;
+public class GenderQuantityDTO {
+    private char gender;
+    private int quantity;
 }
