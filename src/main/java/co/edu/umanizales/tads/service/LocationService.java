@@ -14,6 +14,7 @@ public class LocationService {
 
     public LocationService() {
         //Conectar a una base de datos
+
         locations = new ArrayList<>();
         locations.add(new Location("169","Colombia"));
         locations.add(new Location("16905","Antioquia"));
