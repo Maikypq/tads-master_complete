@@ -37,6 +37,14 @@ public class ListDEController {
                 null), HttpStatus.OK);
     }
 
+    @GetMapping(path = "/removeKamicase")
+    public ResponseEntity<ResponseDTO> kamikaze() {
+        boolean empty = listDEService.isEmpty();
+        return new ResponseEntity<>(new ResponseDTO(
+                200, empty,
+                null), HttpStatus.OK);
+    }
+
     @GetMapping(path = "/moveToEndByInitial/{initial}")
     public ResponseEntity<ResponseDTO> moveToEndByInitial(@PathVariable("initial") String initial) {
         try {

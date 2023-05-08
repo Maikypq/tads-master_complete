@@ -435,5 +435,83 @@ public class ListDE {
 
         return moved; // se retorna el valor booleano actualizado
     }
+
+
+    //Sustentación 8/05/2023
+
+    /*Algoritmo metodo kamikc
+    Si
+       la lista esta vacia
+               no hacemos nada
+
+    Si
+      La posicion es 0, actualizamos la cabeza para pasarse al primer nodo
+
+    Si
+      La posicion 0 es la unica que hay en la lista validamos que no tenga nodo anterior de lo contrario nos revienta el programa
+
+    Si
+     la posicion es igual o mayor al tamaño de la lista
+
+            no hay nodos para eliminar
+
+            Recorremos la lista hasta llegar al nodo que vamos a eliminar ,llevando el puntero al nodo anterior
+
+     Actualizo el puntero del nodo anterior para saltar el nodo que voy a eliminar
+
+        *es decir poner el siguiente nodo como el siguiente del nodo que voy a eliminar*
+
+            suelto el nodo que voy a eliminar
+
+            actualizo la lista si es necesario
+
+
+     */
+    public void removeKamicase(int index) {
+
+        if (this.head == null) {
+            // La lista está vacía, no hay nada que hacer
+            return;
+        }
+
+        if (index == 0) {
+            // La posición es 0, actualizar la cabeza de la lista para saltar el primer nodo
+            this.head = this.head.getNext();
+
+            if (this.head != null) {
+                this.head.setPrev(null);
+            }
+            this.size--;
+            return;
+        }
+
+        if (index >= this.size) {
+            // La posición es mayor o igual al tamaño de la lista, no hay un nodo para eliminar en esa posición
+            return;
+        }
+
+        Node current = this.head;
+        int i = 0;
+
+        while (current != null && i < index) {
+            current = current.getNext();
+            i++;
+        }
+
+        // Actualizar el puntero del nodo anterior para saltar el nodo que se va a eliminar
+
+        current.getPrev().setNext(current.getNext());
+        if (current.getNext() != null) {
+            current.getNext().setPrev(current.getPrev());
+        }
+
+        // Liberar el nodo que se está eliminando
+        current = null;
+        this.size--;
+    }
+
 }
+
+
+
 
