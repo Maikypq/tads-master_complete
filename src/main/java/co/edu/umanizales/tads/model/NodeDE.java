@@ -4,21 +4,10 @@ import lombok.Data;
 
 @Data
 public class NodeDE {
-    private Kid data;
-    private Node next;
-    private Node prev;
+    private  Pet data;
+    private NodeDE nextDE;
+    private NodeDE previous;
 
-    public NodeDE(Kid data, Node prev, Node next) {
-        this.data = data;
-        this.prev = prev;
-        this.next = next;
-    }
-
-    public Node getPrev() {
-        return prev;
-    }
-
-    public void setPrev(Node prev) {
-        this.prev = prev;
+    public NodeDE(Pet data) {this.data = data;
     }
 }

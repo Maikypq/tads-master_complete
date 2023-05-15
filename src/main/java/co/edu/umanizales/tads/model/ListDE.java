@@ -1,439 +1,341 @@
 package co.edu.umanizales.tads.model;
 
-import co.edu.umanizales.tads.controller.dto.KidDTO;
 import co.edu.umanizales.tads.exception.ListDEException;
 import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.List;
+
+
 @Data
 public class ListDE {
-    private Node head;
-    private Node tail;
+    private NodeDE headDE;
+    private NodeDE tail;
     private int size;
 
-    // constructor
-    public ListDE() {
-        head = null;
-        tail = null;
-        size = 0;
-    }
+    private List<Pet> pets = new ArrayList<>();
 
-    public void addToStart(Kid kid) {
-        Node newNode = new Node(kid);
-        if (head == null) {
-            head = newNode;
-            tail = newNode;
-        } else {
-            newNode.setNext(head);
-            head.setPrev(newNode);
-            head = newNode;
-        }
-        size++;
-    }
-
-    public void add(Kid kid) throws ListDEException {
-        if (head != null) {
-            Node temp = head;
-            while (temp.getNext() != null) {
-                if (temp.getData().getIdentification().equals(kid.getIdentification())) {
-                    throw new ListDEException("Ya existe un niño");
+    public void addPets(Pet pet) throws ListDEException {
+        if (headDE != null) {
+            NodeDE temp = headDE;
+            while (temp.getNextDE() != null) {
+                if (temp.getData().getPetIdentification().equals(pet.getPetIdentification())) {
+                    throw new ListDEException("Ya existe la mascota");
                 }
-                temp = temp.getNext();
+                temp = temp.getNextDE();
             }
-            if (temp.getData().getIdentification().equals(kid.getIdentification())) {
-                throw new ListDEException("Ya existe un niño");
+            if (temp.getData().getPetIdentification().equals(pet.getPetIdentification())) {
+                throw new ListDEException("Ya existe la mascota");
             }
-            Node newNode = new Node(kid);
-            temp.setNext(newNode);
-            newNode.setPrev(temp); // nuevo nodo apunta al anterior
+            /// Parado en el último
+            NodeDE newNode = new NodeDE(pet);
+            temp.setNextDE(newNode);
+            newNode.setPrevious(temp);
+
         } else {
-            head = new Node(kid);
+            headDE = new NodeDE(pet);
         }
         size++;
     }
 
-    public Node searchByName(String name) {
-        Node current = head;
-        while (current != null) {
-            if (current.getData().getName().equals(name)) {
-                return current;
+    public List<Pet> print() {
+        pets.clear();
+        if (headDE != null) {
+            NodeDE temp = headDE;
+            while (temp != null) {
+                pets.add(temp.getData());
+                temp = temp.getNextDE();
             }
-            current = current.getNext();
         }
-        return null;
+        return pets;
     }
+
+    public void addPetToStart(Pet pet) throws ListDEException {
+        if (pet == null) {
+            throw new ListDEException("El objeto pet no puede ser nulo");
+        }
+
+        NodeDE nodeCP = new NodeDE(pet);
+        if (headDE != null) {
+            headDE.setPrevious(nodeCP);
+            nodeCP.setNextDE(headDE);
+        }
+        headDE = nodeCP;
+        size++;
+    }
+
+
+    public void addPetByPosition(Pet pet, int position) throws ListDEException {
+        if (position < 0 || position > size) {
+            throw new ListDEException("Posicion invalida:" + position);
+        }
+        NodeDE newNode = new NodeDE(pet);
+        if (position == 0) {
+            newNode.setNextDE(headDE);
+            if (headDE != null) {
+                headDE.setPrevious(newNode);
+            }
+            headDE = newNode;
+        } else {
+            NodeDE current = headDE;
+            for (int i = 1; i < position - 1; i++) {
+                current = current.getNextDE();
+            }
+            newNode.setNextDE(current.getNextDE());
+            if (current.getNextDE() != null) {
+                current.getNextDE().setPrevious(newNode);
+            }
+            current.setNextDE(newNode);
+            newNode.setPrevious(current);
+        }
+    }
+    public void deletePetById(String id) throws IllegalArgumentException {
+        if (id == null) {
+            throw new IllegalArgumentException("El identificador del dueño no puede ser nulo");
+        }
+
+        NodeDE temp = headDE;
+        while (temp != null) {
+            if (temp.getData().getPetIdentification().equals(id)) {
+                NodeDE prev = temp.getPrevious();
+                NodeDE next = temp.getNextDE();
+                if (prev == null) {
+                    headDE = next;
+                } else {
+                    prev.setNextDE(next);
+                }
+                if (next != null) {
+                    next.setPrevious(prev);
+                }
+            }
+            temp = temp.getNextDE();
+        }
+    }
+
 
     //1. invertir lista
 
-    public void invert() {
-        if (head != null) {
-            Node temp = head;
-            while (temp != null) {
-                Node prevNode = temp.getPrev();
-                temp.setPrev(temp.getNext());
-                temp.setNext(prevNode);
-                temp = temp.getPrev();
-            }
-            Node oldHead = head;
-            head = tail;
-            tail = oldHead;
+    public void invertPetsList() throws ListDEException {
+        if (this.headDE == null) {
+            throw new ListDEException("No se puede invertir la lista porque esta vacia");
         }
+
+        ListDE listcopy = new ListDE();
+        NodeDE temp = this.headDE;
+        while (temp != null) {
+            listcopy.addPetToStart(temp.getData());
+            temp = temp.getNextDE();
+        }
+        this.headDE = listcopy.getHeadDE();
     }
 
     //2. Niños al inicio y niñas al final
-    public void orderBoysToStart() throws ListDEException {
-        if (this.head != null) {
-            ListDE listCp = new ListDE();
-            Node temp = this.head;
-            while (temp != null) {
-                if (temp.getData().getGender() == 'M') {
-                    listCp.addToStart(temp.getData());
-                } else {
-                    listCp.add(temp.getData());
-                }
-                temp = temp.getNext();
-            }
-            this.head = listCp.getHead();
-            this.tail = listCp.getTail();
-        } else {
-            throw new ListDEException("List is empty");
+    public void orderMasculinePetsToStart() throws ListDEException {
+        if (headDE == null) {
+            throw new ListDEException(
+                    "La lista está vacía y no se pueden agregar elementos");
         }
+        ListDE listCopy = new ListDE();
+        NodeDE temp = headDE;
+        while (temp != null) {
+            if (temp.getData().getPetGender() == 'M') {
+                listCopy.addPetToStart(temp.getData());
+            } else {
+                listCopy.addPets(temp.getData());
+            }
+            temp = temp.getNextDE();
+        }
+        headDE = listCopy.getHeadDE();
     }
 
     //3. Intercalar niño, niña, niño, niña
-    public void interleaveBoysAndGirls() throws ListDEException {
-        if (head == null) {
-            return;
+    public void intertervalePets() throws ListDEException {
+        if (headDE == null) {
+            throw new ListDEException("La lista está vacía y no se puede realizar el sorteo");
         }
 
-        ListDE boysList = new ListDE();
-        ListDE girlsList = new ListDE();
-
-        // Separa los niños y las niñas en listas diferentes
-        Node current = head;
-        while (current != null) {
-            if ("masculino".equals(current.getData().getGender())) {
-                boysList.add(current.getData());
-            } else {
-                girlsList.add(current.getData());
+        ListDE listM = new ListDE();
+        ListDE listF = new ListDE();
+        NodeDE temp = this.headDE;
+        while (temp != null) {
+            if (temp.getData().getPetGender() == 'M') {
+                listM.addPets(temp.getData());
             }
-            current = current.getNext();
-        }
-
-        // Intercale los niños y las niñas alternativamente
-        head = null; // Reinicia la lista original
-        Node boyNode = boysList.getHead();
-        Node girlNode = girlsList.getHead();
-        while (boyNode != null && girlNode != null) {
-            Node boyNext = boyNode.getNext();
-            Node girlNext = girlNode.getNext();
-
-            boyNode.setNext(girlNode);
-            girlNode.setPrev(boyNode);
-
-            if (head == null) {
-                head = boyNode;
+            if (temp.getData().getPetGender() == 'F') {
+                listF.addPets(temp.getData());
             }
-
-            boyNode = boyNext;
-            girlNode = girlNext;
+            temp = temp.getNextDE();
         }
 
-        // Agrega los nodos restantes de la lista de niños o de niñas
-        ListDE remainingList = (boyNode != null) ? boysList : girlsList;
-        Node remainingNode = (boyNode != null) ? boyNode : girlNode;
-
-        while (remainingNode != null) {
-            Node remainingNext = remainingNode.getNext();
-
-            remainingList.add(remainingNode.getData());
-
-            remainingNode = remainingNext;
+        if (listM.getSize() == 0 || listF.getSize() == 0) {
+            throw new ListDEException(
+                    "No hay suficientes mascotas de ambos géneros para realizar el sorteo");
         }
+
+        ListDE ListCP = new ListDE();
+        NodeDE Nodem = listM.getHeadDE();
+        NodeDE Nodef = listF.getHeadDE();
+        while (Nodem != null || Nodef != null) {
+            if (Nodem != null) {
+                ListCP.addPets(Nodem.getData());
+                Nodem = Nodem.getNextDE();
+            }
+            if (Nodef != null) {
+                ListCP.addPets(Nodef.getData());
+                Nodef = Nodef.getNextDE();
+            }
+        }
+        this.headDE = ListCP.getHeadDE();
     }
 
     //4. Dada una edad eliminar a los niños de la edad dada
-    public void removeBoysByAge(int age) {
-        if (this.head == null) {
-            // La lista está vacía, no hay nada que eliminar
-            return;
+    public void deletePetsByAge(Byte age) throws ListDEException {
+        if (age == null) {
+            throw new ListDEException("La edad de la mascota no puede ser nula");
         }
-
-        Node current = this.head;
-
-        while (current != null) {
-            if (current.getData().getGender() == 'M' && current.getData().getAge() == age) {
-                if (current == this.head) {
-                    // Si el primer elemento cumple las condiciones, se actualiza la cabeza de la lista
-                    this.head = current.getNext();
-                    if (this.head != null) {
-                        this.head.setPrev(null);
-                    }
-                } else if (current.getNext() == null) {
-                    // Si el último elemento cumple las condiciones, se actualiza el puntero del nodo anterior
-                    current.getPrev().setNext(null);
+        NodeDE temp = headDE;
+        while (temp != null) {
+            if (temp.getData().getAgePet() == age) {
+                NodeDE prev = temp.getPrevious();
+                NodeDE next = temp.getNextDE();
+                if (prev == null) {
+                    headDE = next;
                 } else {
-                    // De lo contrario, se actualizan los punteros
-                    current.getPrev().setNext(current.getNext());
-                    current.getNext().setPrev(current.getPrev());
+                    prev.setNextDE(next);
+                }
+                if (next != null) {
+                    next.setPrevious(prev);
                 }
             }
-            // Se avanza al siguiente nodo
-            current = current.getNext();
+            temp = temp.getNextDE();
         }
     }
 
     //5. Obtener el promedio de edad de los niños de la lista
 
-    public double getAverageAgeBoys() {
-        if (head == null) {
-            // La lista está vacía, no hay niños que promediar
-            return 0;
-        }
-
-        int totalAge = 0;
-        int countBoys = 0;
-
-        Node current = head;
-
-        while (current != null) {
-            if (current.getData().getGender() == 'M') {
-                totalAge += current.getData().getAge();
-                countBoys++;
+    public float averagePetAge() throws ListDEException {
+        if (headDE != null) {
+            NodeDE temp = headDE;
+            int counter = 0;
+            int ages = 0;
+            while (temp.getNextDE() != null) {
+                counter++;
+                ages += temp.getData().getAgePet();
+                temp = temp.getNextDE();
             }
-            current = current.getNext();
+            if (counter == 0) {
+                throw new ListDEException("No se puede calcular el porcentaje en una lista vacia");
+            }
+            return (float) ages / counter;
+        } else {
+            throw new ListDEException("No se puede calcular el porcentaje en una lista vacia");
         }
-
-        if (countBoys == 0) {
-            // No hay niños en la lista, no se puede calcular el promedio
-            return 0;
-        }
-
-        double averageAge = (double) totalAge / countBoys;
-        return averageAge;
     }
 
     //6. Generar un reporte que me diga cuantos niños hay de cada ciudad.    Chinchiná 3, Manizales 4, Pereira 5
-    public int getCountKidsByLocationCode(String code) {
+    public int getPetsCountByLocationCode(String code) throws ListDEException {
+        if (code == null || code.isEmpty()) {
+            throw new ListDEException("El codigo de la ciudad no puede estar vacio");
+        }
         int count = 0;
-        Node current = head;
-        while (current != null) {
-            if (current.getData().getLocation().getCode().equals(code)) {
-                count++;
+        if (this.headDE != null) {
+            NodeDE temp = this.headDE;
+            while (temp != null) {
+                if (temp.getData().getLocation().getCode().equals(code)) {
+                    count++;
+                }
+                temp = temp.getNextDE();
             }
-            current = current.getNext();
         }
         return count;
     }
 
     //7. Método que me permita decirle a un niño determinado que adelante un numero de posiciones dadas
 
-    // Agregar al principio de la lista
-    public void addToHead(Kid data) {
-        Node newNode = new Node(data);
-        if (head == null) {
-            // Si la lista está vacía, el nuevo nodo es tanto la cabeza como la cola
-            head = newNode;
-            tail = newNode;
-        } else {
-            // Si la lista no está vacía, se inserta el nuevo nodo al principio
-            newNode.setNext(head);
-            head.setPrev(newNode);
-            head = newNode;
+    public void MovePetPosition(String id, int position) throws ListDEException {
+        if (position < 0) {
+            throw new ListDEException("La posición debe ser un número positivo");
         }
-    }
-
-    public void moveKid(Kid kid, int positionsToMove) throws ListDEException {
-        Node currentNode = head;
-
-        // Recorrer la lista hasta encontrar el nodo que contiene al niño buscado
-        while (currentNode != null) {
-            if (currentNode.getData().equals(kid)) {
-                break;
+        if (headDE != null) {
+            NodeDE temp = headDE;
+            int counter = 1;
+            while (temp != null && !temp.getData().getPetIdentification().equals(id)) {
+                temp = temp.getNextDE();
+                counter++;
             }
-            currentNode = currentNode.getNext();
-        }
-
-        // Si no se encontró el nodo del niño, lanzar una excepción
-        if (currentNode == null) {
-            throw new ListDEException("El niño no está en la lista");
-        }
-
-        // Si el nodo es el primer elemento de la lista, simplemente actualizar la cabeza de la lista
-        if (currentNode == head) {
-            head = currentNode.getNext();
-            if (head != null) {
-                head.setPrev(null);
-            } else {
-                // Si no hay más elementos en la lista, la cola también se actualiza
-                tail = null;
-            }
-        } else {
-            // Si el nodo es el último elemento de la lista, simplemente actualizar la cola de la lista
-            if (currentNode == tail) {
-                tail = currentNode.getPrev();
-                tail.setNext(null);
-            } else {
-                // Si no es ni el primer ni el último elemento, mover el nodo a la posición deseada
-                Node previousNode = currentNode.getPrev();
-                Node targetNode = previousNode;
-                for (int i = 0; i < positionsToMove && targetNode != null; i++) {
-                    targetNode = targetNode.getNext();
+            if (temp != null) {
+                int newPosition = counter - position;
+                if (newPosition < 0) {
+                    throw new ListDEException(
+                            "La posición especificada está fuera de los límites de la lista");
                 }
-                if (targetNode == null) {
-                    // Si se llega al final de la lista, se inserta el nodo al final
-                    previousNode.setNext(currentNode.getNext());
-                    if (currentNode.getNext() != null) {
-                        currentNode.getNext().setPrev(previousNode);
-                    }
-                    currentNode.setPrev(tail);
-                    currentNode.setNext(null);
-                    tail.setNext(currentNode);
-                    tail = currentNode;
+                Pet listCopy = temp.getData();
+                deletePetById(temp.getData().getPetIdentification());
+                if (newPosition > 0) {
+                    addPetByPosition(listCopy, newPosition);
                 } else {
-                    // Si no se llega al final de la lista, se inserta el nodo en la posición deseada
-                    previousNode.setNext(currentNode.getNext());
-                    if (currentNode.getNext() != null) {
-                        currentNode.getNext().setPrev(previousNode);
-                    }
-                    currentNode.setPrev(targetNode.getPrev());
-                    currentNode.setNext(targetNode);
-                    targetNode.getPrev().setNext(currentNode);
-                    targetNode.setPrev(currentNode);
+                    addPetToStart(listCopy);
                 }
             }
         }
     }
 
     //8. Método que me permita decirle a un niño determinado que pierda un numero de posiciones dadas
-    public void losePosition(Kid kid, int positions) throws ListDEException {
-        Node prevNode = null;
-        Node currentNode = head;
-        Node nextNode = null;
+    public void losePetPosition(String id, int position) throws ListDEException {
 
-        // Buscar el nodo que contiene al niño que se quiere mover
-        while (currentNode != null && !currentNode.getData().equals(kid)) {
-            prevNode = currentNode;
-            currentNode = currentNode.getNext();
+        if (position < 0) {
+            throw new ListDEException("La posicion debe ser positiva");
+        }
+        NodeDE temp = headDE;
+        int count = 1;
+        while (temp != null && !temp.getData().getPetIdentification().equals(id)) {
+            temp = temp.getNextDE();
+            count++;
         }
 
-        // Si no se encuentra al niño, lanzar una excepción
-        if (currentNode == null) {
-            throw new ListDEException("El niño no se encuentra en la lista");
-        }
-
-        // Iterar sobre la lista para mover al niño a su nueva posición
-        for (int i = 0; i < positions; i++) {
-            // Si el niño está en la cabeza de la lista, no se puede mover hacia atrás
-            if (currentNode == head) {
-                break;
-            }
-            nextNode = currentNode.getNext();
-            currentNode.setNext(prevNode);
-            currentNode.setPrev(nextNode);
-            prevNode = currentNode;
-            currentNode = nextNode;
-        }
-
-        // Si el niño no pudo moverse las posiciones deseadas, no se hace ningún cambio en la lista
-        if (currentNode == head) {
-            return;
-        }
-
-        // Ajustar los punteros para que el niño se mueva a su nueva posición
-        Node newNextNode = prevNode;
-        Node newCurrentNode = currentNode;
-        Node newPrevNode = currentNode.getPrev();
-        while (newCurrentNode.getNext() != currentNode) {
-            newCurrentNode = newCurrentNode.getNext();
-        }
-        newCurrentNode.setNext(newNextNode);
-        newNextNode.setPrev(newCurrentNode);
-        newPrevNode.setNext(newCurrentNode);
-        newCurrentNode.setPrev(newPrevNode);
+        int sum = position + count;
+        Pet listCP = temp.getData();
+        deletePetById(temp.getData().getPetIdentification());
+        addPetByPosition(listCP, sum);
     }
     //9. Obtener un informe de niños por rango de edades
 
-    public KidDTO[] getKidsByAgeRange(int minAge, int maxAge) {
-        // Contar la cantidad de niños dentro del rango especificado
-        int count = 0;
-        Node current = head;
-        while (current != null) {
-            Kid kid = current.getData();
-            int age = kid.getAge();
-            if (age >= minAge && age <= maxAge) {
-                count++;
-            }
-            current = current.getNext();
+    public int getPetRangeByAge(int Start, int finish) throws ListDEException {
+        if (Start < 0 || finish < 0) {
+            throw new ListDEException("El informe de rangos no puede ser negativo");
         }
-
-        // Inicializar el arreglo con el tamaño determinado
-
-        KidDTO[] kidsInRange = new KidDTO[count];
-
-        // Agregar los niños dentro del rango en el arreglo
-        int i = 0;
-        current = head;
-        while (current != null) {
-            Kid kid = current.getData();
-            int age = kid.getAge();
-            if (age >= minAge && age <= maxAge) {
-                KidDTO kidDTO = new KidDTO();
-                kidDTO.setName(kid.getName());
-                kidDTO.setAge(kid.getAge());
-                kidDTO.setCodeLocation(kid.getLocation().getCode());
-                kidsInRange[i++] = kidDTO;
+        NodeDE temp = headDE;
+        int counter = 0;
+        while (temp != null) {
+            if (temp.getData().getAgePet() >= Start && temp.getData().getAgePet() <= finish) {
+                counter++;
             }
-            current = current.getNext();
+            temp = temp.getNextDE();
         }
-
-        return kidsInRange;
+        return counter;
     }
 
     //10. Implementar un método que me permita enviar al final de la lista a los niños que su nombre inicie con una letra dada
 
+    public void movePetToTheEndByLetter(char letter) throws ListDEException {
+        if (this.headDE != null) {
+            ListDE listCopy = new ListDE();
+            NodeDE temp = this.headDE;
+            char firstChar = Character.toUpperCase(letter);
 
-    public boolean isEmpty() {
-        return tail == null;
-    }
-
-    public boolean moveToEndByInitial(String initial) throws ListDEException {
-        if (isEmpty()) {
-            throw new ListDEException("La lista esta vacia");
-        }
-
-        boolean moved = false; // se inicializa en false
-        Node current = head;
-        Node previous = null;
-        while (current != null) {
-            Kid kid = current.getData();
-            if (kid.getName().startsWith(initial)) {
-                if (previous == null) {
-                    head = current.getNext();
-                    if (head != null) {
-                        head.setPrev(null);
-                    }
+            while (temp != null) {
+                char firstLetter = temp.getData().getNamePet().charAt(0);
+                if (Character.toUpperCase(firstLetter) != firstChar) {
+                    listCopy.addPetToStart(temp.getData());
                 } else {
-                    previous.setNext(current.getNext());
-                    if (current.getNext() != null) {
-                        current.getNext().setPrev(previous);
-                    }
+                    listCopy.addPets(temp.getData());
                 }
-                if (current.getNext() == null) {
-                    tail = previous;
-                }
-                tail.setNext(current);
-                current.setPrev(tail);
-                current.setNext(null);
-                current = previous.getNext();
-
-                moved = true; // se actualiza a true si se mueve al menos un nodo
-            } else {
-                previous = current;
-                current = current.getNext();
+                temp = temp.getNextDE();
             }
+            this.headDE = listCopy.getHeadDE();
+        } else {
+            throw new ListDEException("La lista no puede estar vacia");
         }
-
-        return moved; // se retorna el valor booleano actualizado
     }
 
 
@@ -469,17 +371,17 @@ public class ListDE {
      */
     public void removeKamicase(int index) {
 
-        if (this.head == null) {
+        if (this.headDE == null) {
             // La lista está vacía, no hay nada que hacer
             return;
         }
 
         if (index == 0) {
             // La posición es 0, actualizar la cabeza de la lista para saltar el primer nodo
-            this.head = this.head.getNext();
+            this.headDE = this.headDE.getNextDE();
 
-            if (this.head != null) {
-                this.head.setPrev(null);
+            if (this.headDE != null) {
+                this.headDE.setPrevious(null);
             }
             this.size--;
             return;
@@ -490,19 +392,19 @@ public class ListDE {
             return;
         }
 
-        Node current = this.head;
+        NodeDE current = this.headDE;
         int i = 0;
 
         while (current != null && i < index) {
-            current = current.getNext();
+            current = current.getNextDE();
             i++;
         }
 
         // Actualizar el puntero del nodo anterior para saltar el nodo que se va a eliminar
 
-        current.getPrev().setNext(current.getNext());
-        if (current.getNext() != null) {
-            current.getNext().setPrev(current.getPrev());
+        current.getPrevious().setNextDE(current.getNextDE());
+        if (current.getNextDE() != null) {
+            current.getNextDE().setPrevious(current.getPrevious());
         }
 
         // Liberar el nodo que se está eliminando
