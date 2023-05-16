@@ -10,20 +10,20 @@ import javax.validation.constraints.Size;
 @Data
 public class PetDTO {
     @NotBlank(message = "Este campo no puede ir vacío")
-    private String petIdentification;
+    private String idPet;
 
-    @Size(max = 15, message = "el nombre debe ser máximo de 15 caracteres")
+    @Size(max = 15, min = 1, message = "el nombre debe ser máximo de 15 caracteres")
     @NotBlank(message = "Este campo no puede ir vacío")
     private String namePet;
     @Min(value = 1)
     @Max(value = 18)
     private byte agePet;
     @NotBlank(message = "Este campo no puede ir vacío")
-    private String petType;
+    private String typePet;
     @NotBlank(message = "Este campo no puede ir vacío")
     private String breed;
     @NotBlank(message = "Este campo no puede ir vacio")
-    private char petGender;
+    private char genderPet;
     @NotBlank(message = "Este campo no puede ir vacío")
     private String codeLocation;
 

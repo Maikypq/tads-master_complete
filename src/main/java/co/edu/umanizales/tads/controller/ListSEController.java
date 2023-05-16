@@ -1,23 +1,18 @@
 package co.edu.umanizales.tads.controller;
 
-import co.edu.umanizales.tads.controller.dto.KidDTO;
-import co.edu.umanizales.tads.controller.dto.KidsByLocationDTO;
-import co.edu.umanizales.tads.controller.dto.ReportKidsLocationGenderDTO;
-import co.edu.umanizales.tads.controller.dto.ResponseDTO;
+import co.edu.umanizales.tads.controller.dto.*;
 import co.edu.umanizales.tads.exception.ListSEException;
 import co.edu.umanizales.tads.model.Kid;
 import co.edu.umanizales.tads.model.Location;
+import co.edu.umanizales.tads.model.Ranges;
 import co.edu.umanizales.tads.service.ListSEService;
 import co.edu.umanizales.tads.service.LocationService;
+import co.edu.umanizales.tads.service.RangeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +23,8 @@ public class ListSEController {
     private ListSEService listSEService;
     @Autowired
     private LocationService locationService;
+    @Autowired
+    private RangeService rangeService;
 
     @GetMapping
     public ResponseEntity<ResponseDTO> getKids(){
@@ -35,83 +32,187 @@ public class ListSEController {
                 200,listSEService.getKids().getHead(),null), HttpStatus.OK);
     }
 
+    // 1
     @GetMapping("/invert")
-    public ResponseEntity<ResponseDTO> invert(){
-        listSEService.invert();
-        return new ResponseEntity<>(new ResponseDTO(
-                200,"Se ha invertido la lista",
-                null), HttpStatus.OK);
+    public ResponseEntity<ResponseDTO> invert() throws ListSEException {
+        try {
+            if (listSEService.getKids() != null) {
+                listSEService.invert();
+                return new ResponseEntity<>(new ResponseDTO(200,
+                        "La lista se ha invertido", null), HttpStatus.OK);
 
-    }
-    @GetMapping(path = "/orderBoysToStart")
-    public ResponseEntity<ResponseDTO> getorderBoysToStart(){
-        List<KidsByLocationDTO> kidsByLocationDTOList = new ArrayList<>();
-        for(Location loc: locationService.getLocations()){
-            int count = listSEService.getKids().getCountKidsByLocationCode(loc.getCode());
-            if(count>0){
-                kidsByLocationDTOList.add(new KidsByLocationDTO(loc,count));
+            } else {
+                return new ResponseEntity<>(new ResponseDTO(409,
+                        "No se puede realizar la acción", null), HttpStatus.BAD_REQUEST);
             }
+        } catch (Exception e) {
+            return new ResponseEntity<>(new ResponseDTO(500,
+                    "Error interno del servidor", null), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // 2
+    @GetMapping(path = "/orderboystostart")
+    public ResponseEntity<ResponseDTO> orderBoyToStart() throws ListSEException {
+        try {
+            if (listSEService.getKids() != null) {
+                listSEService.getKids().orderBoysToStart();
+                return new ResponseEntity<>(new ResponseDTO(200,
+                        "Se ha ordenado la lista con las mascotas masculinas al comienzo",
+                        null), HttpStatus.OK);
+
+            } else {
+                return new ResponseEntity<>(new ResponseDTO(409,
+                        "No se puede realizar la acción", null), HttpStatus.BAD_REQUEST);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(new ResponseDTO(500,
+                    "Error interno del servidor", null), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // 3
+    @GetMapping(path = "/intervaleboys")
+    public ResponseEntity<ResponseDTO> intervaleboysandgirls() throws ListSEException {
+        try {
+            listSEService.getKids().interleaveBoysAndGirls();
+        } catch (Exception e) {
+            return new ResponseEntity<>(new ResponseDTO(
+                    500, "Se produjo un error al alternar las mascotas", null),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>(new ResponseDTO(
-                200,kidsByLocationDTOList,
-                null), HttpStatus.OK);
+                200, "La lista se alternó", null), HttpStatus.OK);
     }
 
-    @GetMapping(path = "/addToEnd")
-    public ResponseEntity<ResponseDTO> getaddToEnd(){
-        List<KidsByLocationDTO> kidsByLocationDTOList = new ArrayList<>();
-        for(Location loc: locationService.getLocations()){
-            int count = listSEService.getKids().getCountKidsByLocationCode(loc.getCode());
-            if(count>0){
-                kidsByLocationDTOList.add(new KidsByLocationDTO(loc,count));
-            }
+    //4
+
+    @GetMapping(path = "/deleteboysbyage/{age}")
+    public ResponseEntity<ResponseDTO> removeBoysByAge(@PathVariable byte age) {
+        try {
+            listSEService.getKids().removeBoysByAge(age);
+            return new ResponseEntity<>(new ResponseDTO(
+                    200, "El niño fue eliminado", null), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new ResponseDTO(
+                    500, "Ocurrió un error al eliminar el niño", null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<>(new ResponseDTO(
-                200,kidsByLocationDTOList,
-                null), HttpStatus.OK);
     }
 
-    @GetMapping(path = "/removeBoysByAge")
-    public ResponseEntity<ResponseDTO> getremoveBoysByAge(){
-        List<KidsByLocationDTO> kidsByLocationDTOList = new ArrayList<>();
-        for(Location loc: locationService.getLocations()){
-            int count = listSEService.getKids().getCountKidsByLocationCode(loc.getCode());
-            if(count>0){
-                kidsByLocationDTOList.add(new KidsByLocationDTO(loc,count));
-            }
-        }
-        return new ResponseEntity<>(new ResponseDTO(
-                200,kidsByLocationDTOList,
-                null), HttpStatus.OK);
-    }
-
+    // 5
     @GetMapping(path = "/getAverageAgeBoys")
-    public ResponseEntity<ResponseDTO> getAverageAgeBoys(){
-        List<KidsByLocationDTO> kidsByLocationDTOList = new ArrayList<>();
-        for(Location loc: locationService.getLocations()){
-            int count = listSEService.getKids().getCountKidsByLocationCode(loc.getCode());
-            if(count>0){
-                kidsByLocationDTOList.add(new KidsByLocationDTO(loc,count));
-            }
+    public ResponseEntity<ResponseDTO> getAverageAgeBoys() throws ListSEException {
+        try {
+            float averageAge = (float) listSEService.getKids().getAverageAgeBoys();
+            return new ResponseEntity<>(new ResponseDTO(
+                    200, "La edad promedio del niño es: " + averageAge, null),
+                    HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new ResponseDTO(
+                    500, "Se produjo un error al calcular la edad promedio del niño", null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<>(new ResponseDTO(
-                200,kidsByLocationDTOList,
-                null), HttpStatus.OK);
     }
 
-    @GetMapping(path = "/interleaveBoysAndGirls")
-    public ResponseEntity<ResponseDTO> getinterleaveBoysAndGirls(){
-        List<KidsByLocationDTO> kidsByLocationDTOList = new ArrayList<>();
-        for(Location loc: locationService.getLocations()){
-            int count = listSEService.getKids().getCountKidsByLocationCode(loc.getCode());
-            if(count>0){
-                kidsByLocationDTOList.add(new KidsByLocationDTO(loc,count));
+    // 6
+
+    @GetMapping(path = "/kidsbylocation")
+    public ResponseEntity<ResponseDTO> getCountKidsByLocationCode() {
+        List<KidsByLocationDTO> kidsByLocationDTOS = new ArrayList<>();
+        try {
+            for (Location loc : locationService.getLocations()) {
+
+                int count = listSEService.getKids().getCountKidsByLocationCode(loc.getCode());
+                if (count > 0) {
+                    kidsByLocationDTOS.add(new KidsByLocationDTO(loc, count));
+                }
             }
+            return new ResponseEntity<>(new ResponseDTO(
+                    200, kidsByLocationDTOS,
+                    null), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<>(new ResponseDTO(
-                200,kidsByLocationDTOList,
-                null), HttpStatus.OK);
     }
+
+    // 7
+
+    @GetMapping(path = "/movekid/{id}/{numposition}")
+    public ResponseEntity<ResponseDTO> winPosition(@PathVariable String id,
+                                                   @PathVariable int numposition) throws ListSEException {
+        try {
+            if (listSEService.getKids() != null) {
+                listSEService.getKids().movekid(id, numposition, listSEService.getKids());
+                return new ResponseEntity<>(new ResponseDTO(
+                        200, "El niño se ha movido con éxito",
+                        null), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseDTO(409,
+                        "No se puede realizar la acción", null), HttpStatus.BAD_REQUEST);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(new ResponseDTO(500, "Error interno del servidor", null), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // 8
+
+    @GetMapping(path = "/loseposition/{id}/{numposition}")
+    public ResponseEntity<ResponseDTO> losePosition(@PathVariable String id,
+                                                    @PathVariable int numposition) throws ListSEException {
+        try {
+
+            if (listSEService.getKids() != null) {
+                listSEService.getKids().losePosition(id, numposition, listSEService.getKids());
+                return new ResponseEntity<>(new ResponseDTO(
+                        200, "El niño se ha movido con éxito",
+                        null), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ResponseDTO(409, "No se puede realizar la acción", null), HttpStatus.BAD_REQUEST);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(new ResponseDTO(500, "Error interno del servidor", null), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    //9
+
+    @GetMapping(path = "/rangebyage")
+    public ResponseEntity<ResponseDTO> getRangeByAge() throws ListSEException {
+        try {
+            List<RangeDTO> kidsRangeList = new ArrayList<>();
+
+            if (listSEService.getKids() != null) {
+                for (Ranges i : rangeService.getRanges()) {
+                    int quantity = listSEService.getKids().getRangeByAge(i.getFrom(), i.getTo());
+                    kidsRangeList.add(new RangeDTO(i, quantity));
+                }
+                return new ResponseEntity<>(new ResponseDTO(200, "el rango de los niños es: " + kidsRangeList, null), HttpStatus.OK);
+
+            } else {
+                return new ResponseEntity<>(new ResponseDTO(409, "No se puede realizar la acción", null), HttpStatus.BAD_REQUEST);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(new ResponseDTO(500, "Error interno del servidor", null), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // 10
+
+    @GetMapping(path = "/moveToEndByInitial/{letter}")
+    public ResponseEntity<ResponseDTO> moveToEndByInitial(@PathVariable char letter) {
+        try {
+            listSEService.getKids().moveToEndByInitial(Character.toUpperCase(letter));
+            return new ResponseEntity<>(new ResponseDTO(
+                    200, "los niños con la letra dada se han enviado al final",
+                    null), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+
+
 
     @GetMapping(path = "/addToHead")
     public ResponseEntity<ResponseDTO> getaddToHead(){
@@ -127,19 +228,6 @@ public class ListSEController {
                 null), HttpStatus.OK);
     }
 
-    @GetMapping(path = "/losePosition")
-    public ResponseEntity<ResponseDTO> getlosePosition(){
-        List<KidsByLocationDTO> kidsByLocationDTOList = new ArrayList<>();
-        for(Location loc: locationService.getLocations()){
-            int count = listSEService.getKids().getCountKidsByLocationCode(loc.getCode());
-            if(count>0){
-                kidsByLocationDTOList.add(new KidsByLocationDTO(loc,count));
-            }
-        }
-        return new ResponseEntity<>(new ResponseDTO(
-                200,kidsByLocationDTOList,
-                null), HttpStatus.OK);
-    }
     @GetMapping(path = "/getKidsByAgeRange")
     public ResponseEntity<ResponseDTO> getKidsByAgeRange(){
         List<KidsByLocationDTO> kidsByLocationDTOList = new ArrayList<>();

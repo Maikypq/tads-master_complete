@@ -1,6 +1,5 @@
 package co.edu.umanizales.tads.model;
 
-import co.edu.umanizales.tads.controller.dto.KidDTO;
 import co.edu.umanizales.tads.controller.dto.ReportKidsLocationGenderDTO;
 import co.edu.umanizales.tads.exception.ListSEException;
 import lombok.Data;
@@ -53,19 +52,54 @@ public class ListSE {
         }
         size++;
     }
+    public void deleteByidentification (String identification){
+        Node currentNode = head;
+        Node prevNode = null;
 
-//1.Invertir Lista
-    public void invert(){
-        if(this.head !=null){
-            ListSE listCp = new ListSE();
-            Node temp = this.head;
-            while(temp != null){
-                listCp.addToStart(temp.getData());
-                temp = temp.getNext();
+        while (currentNode != null && currentNode.getData().getIdentification() != identification) {
+            prevNode = currentNode;
+            currentNode = currentNode.getNext();
+        }
+
+        if(currentNode != null){
+            if (prevNode == null){
+                head = currentNode.getNext();
+            }else {
+                prevNode.setNext(currentNode.getNext());
             }
-            this.head = listCp.getHead();
         }
     }
+    public void addKidsByPosition(Kid kid, int pos){
+        Node newNode = new Node(kid);
+        if (pos == 0){
+            newNode.setNext(head);
+            head = newNode;
+        } else {
+            Node current = head;
+            for (int i = 1; i < pos - 1; i++){
+                current = current.getNext();
+            }
+            newNode.setNext(current.getNext());
+            current.setNext(newNode);
+        }
+    }
+
+//1.Invertir Lista
+
+public void invert() throws ListSEException{
+    if(this.head !=null){
+        ListSE listCp = new ListSE();
+        Node temp = this.head;
+        while(temp != null){
+            listCp.addToStart(temp.getData());
+            temp = temp.getNext();
+        }
+        this.head = listCp.getHead();
+    }
+    else {
+        throw new ListSEException("No hay niños para poder invertir la lista");
+    }
+}
 
     //2.Niños al inicio y niñas al final
     public void orderBoysToStart() throws ListSEException{
@@ -89,66 +123,42 @@ public class ListSE {
 
     //3.intercalar niño,niña,niño,niña
 
-         //Adicionar al final
-    public void addToEnd(Kid data) {
-        Node newNode = new Node(data);
-
-        if (head == null) {
-            head = newNode;
-            tail = newNode;
-        } else {
-            tail.setNext(newNode);
-            tail = newNode;
-        }
-
-        size++;
-    }
     public void interleaveBoysAndGirls() throws ListSEException {
-        if (head == null) {
-            return;
-        }
-
+        ListSE listCp = new ListSE();
         ListSE boysList = new ListSE();
         ListSE girlsList = new ListSE();
 
-        // Separa los niños y las niñas en listas diferentes
-        Node current = head;
-        while (current != null) {
-            if ("masculino".equals(current.getData().getGender())) {
-                boysList.addToEnd(current.getData());
-            } else {
-                girlsList.addToEnd(current.getData());
+        Node temp = head;
+
+        if (this.head == null && this.head.getNext() == null) {
+            throw new ListSEException("No existen niños o no hay suficientes para alternar");
+        } else {
+            while (temp != null) {
+                if (temp.getData().getGender() == 'M') {
+                    boysList.add(temp.getData());
+                } else {
+                    if (temp.getData().getGender() == 'F') {
+                        girlsList.add(temp.getData());
+                    }
+                }
+                temp = temp.getNext();
             }
-            current = current.getNext();
+
+            Node nodeBoys = boysList.getHead();
+            Node nodeGirls = girlsList.getHead();
+
+            while (nodeBoys != null) {
+                if (nodeBoys != null) {
+                    listCp.add(nodeBoys.getData());
+                    nodeBoys = nodeBoys.getNext();
+                }
+                if (nodeGirls != null) {
+                    listCp.add(nodeGirls.getData());
+                    nodeGirls = nodeGirls.getNext();
+                }
+            }
+            this.head = listCp.getHead();
         }
-
-        // Intercale los niños y las niñas alternativamente
-
-        ListSE interleavedList = new ListSE();
-        Node boyNode = boysList.getHead();
-        Node girlNode = girlsList.getHead();
-        while (boyNode != null && girlNode != null) {
-            interleavedList.addToEnd(boyNode.getData());
-            interleavedList.addToEnd(girlNode.getData());
-            boyNode = boyNode.getNext();
-            girlNode = girlNode.getNext();
-        }
-
-        // Agrega los niños restantes si hay más niños que niñas
-
-        while (boyNode != null) {
-            interleavedList.addToEnd(boyNode.getData());
-            boyNode = boyNode.getNext();
-        }
-
-        // Agrega las niñas restantes si hay más niñas que niños
-
-        while (girlNode != null) {
-            interleavedList.addToEnd(girlNode.getData());
-            girlNode = girlNode.getNext();
-        }
-
-        head = interleavedList.getHead();
     }
 
 
@@ -226,158 +236,87 @@ public class ListSE {
 
     //7.Método que me permita decirle a un niño determinado que adelante un numero de posiciones dadas
 
-    //agregar al principio de la lista
-    public void addToHead(Kid data) {
-        Node newNode = new Node(data);
-        newNode.setNext(head);
-        head = newNode;
-    }
-    public void moveKid(Kid kid, int positionsToMove) throws ListSEException {
-        Node prevNode = null;
-        Node currentNode = head;
+    public void movekid(String id, int position, ListSE listSE) throws ListSEException{
+        if (head != null){
+            Node temp = this.head;
+            int counter = 0;
 
-        // Recorrer la lista hasta encontrar el nodo que contiene al niño buscado
-        while (currentNode != null) {
-            if (currentNode.getData().equals(kid)) {
-                break;
+            while (temp != null && ! temp.getData().getIdentification().equals(id)){
+                temp = temp.getNext();
+                counter ++;
             }
-            prevNode = currentNode;
-            currentNode = currentNode.getNext();
-        }
+            int newPosition = counter - position;
 
-        // Si no se encontró el nodo del niño, lanzar una excepción
-        if (currentNode == null) {
-            throw new ListSEException("El niño no está en la lista");
-        }
+            Kid listCopy = temp.getData();
 
-        // Si el nodo es el primer elemento de la lista, simplemente actualizar la cabeza de la lista
-        if (prevNode == null) {
-            head = currentNode.getNext();
-            currentNode.setNext(null);
-            addToHead(currentNode.getData());
-        } else {
-            // Si no es el primer elemento, mover el nodo a la posición deseada
-            int count = 0;
-            Node targetNode = prevNode;
-            while (count < positionsToMove && targetNode.getNext() != null) {
-                targetNode = targetNode.getNext();
-                count++;
-            }
-            prevNode.setNext(currentNode.getNext());
-            currentNode.setNext(targetNode.getNext());
-            targetNode.setNext(currentNode);
+            listSE.deleteByidentification(temp.getData().getIdentification());
+
+            listSE.addKidsByPosition(listCopy , newPosition);
+        }
+        else {
+            throw new ListSEException("La lista esta vacia por lo tanto no se puede completar la accion");
         }
     }
 
     //8.Método que me permita decirle a un niño determinado que pierda un numero de posiciones dadas
-    public void losePosition(Kid kid, int positions) throws ListSEException {
-        Node prevNode = null;
-        Node currentNode = head;
-        Node nextNode = null;
+    public void losePosition(String id, int position, ListSE listSE) throws ListSEException{
+        if (head != null){
+            Node temp = this.head;
+            int counter = 1;
 
-        // Buscar el nodo que contiene al niño que se quiere mover
-        while (currentNode != null && !currentNode.getData().equals(kid)) {
-            prevNode = currentNode;
-            currentNode = currentNode.getNext();
-        }
-
-        // Si no se encuentra al niño, lanzar una excepción
-        if (currentNode == null) {
-            throw new ListSEException("El niño no se encuentra en la lista");
-        }
-
-        // Iterar sobre la lista para mover al niño a su nueva posición
-        for (int i = 0; i < positions; i++) {
-            // Si el niño está en la cabeza de la lista, no se puede mover hacia atrás
-            if (currentNode == head) {
-                break;
+            while (temp != null && ! temp.getData().getIdentification().equals(id)){
+                temp = temp.getNext();
+                counter ++;
             }
-            nextNode = currentNode.getNext();
-            currentNode.setNext(prevNode);
-            prevNode = currentNode;
-            currentNode = nextNode;
+            int newPosition = position+counter;
+            Kid listCopy = temp.getData();
+            listSE.deleteByidentification(temp.getData().getIdentification());
+            listSE.addKidsByPosition(listCopy , newPosition);
         }
-
-        // Si el niño no pudo moverse las posiciones deseadas, no se hace ningún cambio en la lista
-        if (currentNode == head) {
-            return;
-        }
-
-        // Ajustar los punteros para que el niño se mueva a su nueva posición
-        Node newNextNode = prevNode;
-        Node newCurrentNode = currentNode;
-        Node newPrevNode = null;
-        while (newCurrentNode.getNext() != currentNode) {
-            newPrevNode = newCurrentNode;
-            newCurrentNode = newCurrentNode.getNext();
-        }
-        newCurrentNode.setNext(newNextNode);
-        if (newPrevNode == null) {
-            head = newCurrentNode;
-        } else {
-            newPrevNode.setNext(newCurrentNode);
+        else {
+            throw new ListSEException("La lista esta vacia por lo tanto no se puede completar la accion");
         }
     }
 
     //9.Obtener un informe de niños por rango de edades
-    public KidDTO[] getKidsByAgeRange(int minAge, int maxAge) {
-        // Contar la cantidad de niños dentro del rango especificado
+    public int getRangeByAge(int first, int last) throws ListSEException{
+        Node temp = head;
         int count = 0;
-        Node current = head;
-        while (current != null) {
-            Kid kid = current.getData();
-            int age = kid.getAge();
-            if (age >= minAge && age <= maxAge) {
-                count++;
+        while (temp != null){
+            if (temp.getData().getAge() >= first && temp.getData().getAge() <= last){
+                count ++;
             }
-            current = current.getNext();
+            temp = temp.getNext();
         }
-
-        // Inicializar el arreglo con el tamaño determinado
-        KidDTO[] kidsInRange = new KidDTO[count];
-
-        // Agregar los niños dentro del rango en el arreglo
-        int i = 0;
-        current = head;
-        while (current != null) {
-            Kid kid = current.getData();
-            int age = kid.getAge();
-            if (age >= minAge && age <= maxAge) {
-                KidDTO kidDTO = new KidDTO();
-                kidsInRange[i++] = kidDTO;
-            }
-            current = current.getNext();
-        }
-
-        return kidsInRange;
+        return count;
     }
+
     //10. Implementar un método que me permita enviar al final de la lista a los niños que su nombre inicie con una letra dada
-    public void moveToEndByInitial(String initial) {
-        if (head == null) {
-            return;
-        }
-        Node current = head;
-        Node previous = null;
-        while (current != null) {
-            Kid kid = current.getData();
-            if (kid.getName().startsWith(initial)) {
-                if (previous == null) {
-                    head = current.getNext();
-                } else {
-                    previous.setNext(current.getNext());
-                }
-                if (current.getNext() == null) {
-                    tail = previous;
-                }
-                tail.setNext(current);
-                current.setNext(null);
-                current = previous.getNext();
-            } else {
-                previous = current;
-                current = current.getNext();
+    public void moveToEndByInitial(char letter) throws ListSEException{
+        ListSE listCopy = new ListSE();
+        Node temp = this.head;
+
+        while (temp != null) {
+            if (temp.getData().getName().charAt(0) != Character.toUpperCase(letter)) {
+                listCopy.add(temp.getData());
             }
+            temp = temp.getNext();
         }
+
+        temp = this.head;
+
+        while (temp != null) {
+            if (temp.getData().getName().charAt(0) == Character.toUpperCase(letter)) {
+                listCopy.add(temp.getData());
+            }
+            temp = temp.getNext();
+        }
+        this.head = listCopy.getHead();
     }
+
+
+
+
 
     public void getReportKidsByLocationGendersByAge(byte age, ReportKidsLocationGenderDTO report){
         if(head !=null){

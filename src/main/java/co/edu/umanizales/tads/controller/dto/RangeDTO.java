@@ -9,4 +9,5 @@ import lombok.Data;
 public class RangeDTO {
     private Ranges ranges;
     int quantity;
+
 }

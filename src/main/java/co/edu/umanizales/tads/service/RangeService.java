@@ -20,5 +20,7 @@ public class RangeService {
         ranges.add(new Ranges(10,12));
         ranges.add(new Ranges(13,15));
 
+
     }
 }
+

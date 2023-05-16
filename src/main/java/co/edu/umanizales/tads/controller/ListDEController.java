@@ -43,29 +43,33 @@ public class ListDEController {
                     404, "La ubicación no existe",
                     null), HttpStatus.OK);
         }
-        Pet pet = new Pet(petDTO.getPetIdentification(),
-                petDTO.getNamePet(), petDTO.getAgePet(), petDTO.getPetType(),
-                petDTO.getBreed(), petDTO.getPetGender(), location);
+        Pet pet = new Pet(petDTO.getIdPet(),
+                petDTO.getNamePet(), petDTO.getAgePet(), petDTO.getTypePet(),
+                petDTO.getBreed(), petDTO.getGenderPet(), location);
         listDEService.getPets().addPets(pet);
         return new ResponseEntity<>(new ResponseDTO(
-                200, "Se ha adicionado al chandoso",
+                200, "Se ha adicionado la mascota",
                 null), HttpStatus.OK);
 
     }
-    @GetMapping(path = "/deletebyid/{id}")
+    @GetMapping(path = "/deletepetbyid/{id}")
     public ResponseEntity<ResponseDTO> deletePetById(@PathVariable String id) throws ListDEException {
         try {
             listDEService.getPets().deletePetById(id);
             return new ResponseEntity<>(new ResponseDTO(
-                    200, "La/s mascota/s fue/ron eliminada/s", null), HttpStatus.OK);
+                    200, "Las mascotas fueron eliminadas", null), HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(new ResponseDTO(
                     500, "Ocurrió un error al eliminar la/s mascota/s", null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    @GetMapping(path = "/addpetbyposition/{position}")
-    public ResponseEntity<ResponseDTO> addPetByPositionPet(@RequestBody Pet pet, @PathVariable int position) throws ListDEException {
+    @PostMapping(path = "/addpetbyposition/{position}")
+    public ResponseEntity<ResponseDTO> addPetByPosition(@RequestBody PetDTO petDTO, @PathVariable int position) throws ListDEException {
         try {
+            Location location = locationService.getLocationByCode(petDTO.getCodeLocation());
+            Pet pet = new Pet(petDTO.getIdPet(),
+                    petDTO.getNamePet(), petDTO.getAgePet(), petDTO.getTypePet(),
+                    petDTO.getBreed(), petDTO.getGenderPet(), location);
             listDEService.getPets().addPetByPosition(pet, position);
             return new ResponseEntity<>(new ResponseDTO(
                     200, "La mascota fue añadida en la posición solicitada", null), HttpStatus.OK);
