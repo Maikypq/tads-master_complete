@@ -27,5 +27,7 @@ public class PetDTO {
     @NotBlank(message = "Este campo no puede ir vacío")
     private String codeLocation;
 
+    private Boolean Petbathed;
+
 
 }

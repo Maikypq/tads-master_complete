@@ -36,7 +36,7 @@ public class ListDEController {
                 200, listDEService.getPets().print(), null), HttpStatus.OK);
     }
     @PostMapping
-    public ResponseEntity<ResponseDTO> addPets(@RequestBody PetDTO petDTO) throws ListDEException {
+    public ResponseEntity<ResponseDTO> addPet(@RequestBody PetDTO petDTO) throws ListDEException {
         Location location = locationService.getLocationByCode(petDTO.getCodeLocation());
         if (location == null) {
             return new ResponseEntity<>(new ResponseDTO(
@@ -45,7 +45,7 @@ public class ListDEController {
         }
         Pet pet = new Pet(petDTO.getIdPet(),
                 petDTO.getNamePet(), petDTO.getAgePet(), petDTO.getTypePet(),
-                petDTO.getBreed(), petDTO.getGenderPet(), location);
+                petDTO.getBreed(), petDTO.getGenderPet(), location, false);
         listDEService.getPets().addPets(pet);
         return new ResponseEntity<>(new ResponseDTO(
                 200, "Se ha adicionado la mascota",
@@ -69,13 +69,15 @@ public class ListDEController {
             Location location = locationService.getLocationByCode(petDTO.getCodeLocation());
             Pet pet = new Pet(petDTO.getIdPet(),
                     petDTO.getNamePet(), petDTO.getAgePet(), petDTO.getTypePet(),
-                    petDTO.getBreed(), petDTO.getGenderPet(), location);
+                    petDTO.getBreed(), petDTO.getGenderPet(), location, false);
             listDEService.getPets().addPetByPosition(pet, position);
             return new ResponseEntity<>(new ResponseDTO(
-                    200, "La mascota fue añadida en la posición solicitada", null), HttpStatus.OK);
+                    200, "La mascota fue añadida en la posición solicitada",
+                    null), HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity<>(new ResponseDTO(
-                    500, "Se produjo un error al agregar la mascota en la posición solicitada", null), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(new ResponseDTO(500,
+                    "Se produjo un error al agregar la mascota en la posición solicitada",
+                    null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
     @GetMapping("/invertpetslist")
